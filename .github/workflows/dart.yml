@@ -21,7 +21,7 @@ jobs:
       # Setup Flutter SDK (required for Flutter projects)
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          channel: 'stable'
 
       - name: Install dependencies
         run: flutter pub get
