@@ -1,24 +1,45 @@
 import 'package:flutter/material.dart';
+import 'core/theme/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.light
+          ? ThemeMode.dark
+          : ThemeMode.light;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Boos',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const MyHomePage(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: _themeMode,
+      debugShowCheckedModeBanner: false,
+      home: MyHomePage(onThemeToggle: _toggleTheme),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  final VoidCallback onThemeToggle;
+
+  const MyHomePage({super.key, required this.onThemeToggle});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -29,10 +50,22 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: Text('Boos', style: TextStyle(color: Colors.white)),
+        title: const Text('Boos'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Theme.of(context).brightness == Brightness.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+            ),
+            onPressed: widget.onThemeToggle,
+            tooltip: 'Toggle theme',
+          ),
+        ],
       ),
-      body: Center(child: Text('Hello, World!')),
+      body: const Center(
+        child: Text('Hello, World!', style: TextStyle(fontSize: 24)),
+      ),
     );
   }
 }
