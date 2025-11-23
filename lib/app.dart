@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
+import 'core/storage/local_storage.dart';
 
 /// Boos App
 ///
@@ -24,25 +25,70 @@ class BoosApp extends StatefulWidget {
 }
 
 class _BoosAppState extends State<BoosApp> {
-  /// Current theme mode (light or dark)
+  /// Current theme mode
   ///
   /// LEARN: ThemeMode is an enum with three values:
   /// - ThemeMode.light: Always light theme
   /// - ThemeMode.dark: Always dark theme
-  /// - ThemeMode.system: Follows device theme
+  /// - ThemeMode.system: Follows device theme (default)
   ///
-  /// We start with light mode, but this could be loaded from storage.
-  ThemeMode _themeMode = ThemeMode.light;
+  /// We start with system mode to follow device settings.
+  /// User preference is saved to local storage.
+  ThemeMode _themeMode = ThemeMode.system;
 
-  /// Toggle between light and dark theme
+  /// Initialize theme mode from storage
   ///
-  /// LEARN: setState() tells Flutter that something changed and
-  /// the UI needs to be rebuilt. Without it, changes won't be visible.
+  /// LEARN: This loads the saved theme preference when the app starts.
+  /// If no preference is saved, it defaults to system theme.
+  @override
+  void initState() {
+    super.initState();
+    _loadThemeMode();
+  }
+
+  /// Load theme mode from local storage
+  ///
+  /// LEARN: We check if a theme preference was saved.
+  /// If yes, use it. If no, use system theme.
+  Future<void> _loadThemeMode() async {
+    final localStorage = LocalStorage();
+    final savedTheme = localStorage.getString('theme_mode');
+
+    if (savedTheme != null) {
+      setState(() {
+        _themeMode = ThemeMode.values.firstWhere(
+          (mode) => mode.toString() == savedTheme,
+          orElse: () => ThemeMode.system,
+        );
+      });
+    }
+  }
+
+  /// Save theme mode to local storage
+  ///
+  /// LEARN: We save the user's theme preference so it persists
+  /// across app restarts.
+  Future<void> _saveThemeMode(ThemeMode mode) async {
+    final localStorage = LocalStorage();
+    await localStorage.saveString('theme_mode', mode.toString());
+  }
+
+  /// Cycle through theme modes
+  ///
+  /// LEARN: This cycles through: system -> light -> dark -> system
+  /// This gives users three options: follow system, force light, or force dark.
   void _toggleTheme() {
     setState(() {
-      _themeMode = _themeMode == ThemeMode.light
-          ? ThemeMode.dark
-          : ThemeMode.light;
+      switch (_themeMode) {
+        case ThemeMode.system:
+          _themeMode = ThemeMode.light;
+        case ThemeMode.light:
+          _themeMode = ThemeMode.dark;
+        case ThemeMode.dark:
+          _themeMode = ThemeMode.system;
+      }
+      // Save preference
+      _saveThemeMode(_themeMode);
     });
   }
 
@@ -103,18 +149,20 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
+    // LEARN: We get the current brightness from the theme.
+    // This reflects the actual theme being used (including system theme).
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Boos'),
         actions: [
+          // LEARN: We show different icons based on current theme.
+          // This gives visual feedback about the current theme mode.
           IconButton(
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.dark
-                  ? Icons.light_mode
-                  : Icons.dark_mode,
-            ),
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
             onPressed: widget.onThemeToggle,
-            tooltip: 'Toggle theme',
+            tooltip: isDark ? 'Switch to light mode' : 'Switch to dark mode',
           ),
         ],
       ),
