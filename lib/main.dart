@@ -28,7 +28,8 @@ void main() async {
   //
   // LEARN: runApp() tells Flutter to start rendering widgets.
   // We pass BoosApp which is our root widget.
-  runApp(const BoosApp());
+  // We use the GlobalKey so the splash screen can access the app state.
+  runApp(BoosApp(key: BoosApp.appKey));
 }
 
 /// Initialize app services

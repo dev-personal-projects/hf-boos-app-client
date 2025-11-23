@@ -2,14 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:boos/app.dart';
+import 'package:boos/features/auth/presentation/screens/splash_screen.dart';
 
 void main() {
   group('Boos App Tests', () {
+    testWidgets('Splash screen displays correctly', (
+      WidgetTester tester,
+    ) async {
+      // Build splash screen
+      await tester.pumpWidget(MaterialApp(home: const SplashScreen()));
+
+      // Verify splash screen elements
+      expect(find.text('Boos'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
+
     testWidgets('App renders correctly with all main elements', (
       WidgetTester tester,
     ) async {
-      // Build our app and trigger a frame.
-      await tester.pumpWidget(const BoosApp());
+      // Build our app
+      await tester.pumpWidget(BoosApp(key: BoosApp.appKey));
+
+      // Wait for splash screen navigation (2 seconds + animation)
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
 
       // Verify that the app title is displayed in the AppBar.
       expect(find.text('Boos'), findsOneWidget);
@@ -18,28 +34,27 @@ void main() {
       expect(find.text('Hello, World!'), findsOneWidget);
 
       // Verify that the theme toggle button is present.
-      // LEARN: The app now starts with system theme, so either icon could be shown.
-      final hasThemeIcon =
-          find.byIcon(Icons.dark_mode).evaluate().isNotEmpty ||
-          find.byIcon(Icons.light_mode).evaluate().isNotEmpty;
-      expect(hasThemeIcon, isTrue);
+      final hasDarkIcon = find.byIcon(Icons.dark_mode).evaluate().isNotEmpty;
+      final hasLightIcon = find.byIcon(Icons.light_mode).evaluate().isNotEmpty;
+      expect(hasDarkIcon || hasLightIcon, isTrue);
     });
 
     testWidgets('Theme toggle button works correctly', (
       WidgetTester tester,
     ) async {
       // Build our app.
-      await tester.pumpWidget(const BoosApp());
+      await tester.pumpWidget(BoosApp(key: BoosApp.appKey));
+
+      // Wait for splash screen to navigate
+      await tester.pump(const Duration(seconds: 3));
       await tester.pumpAndSettle();
 
-      // LEARN: The app now starts with ThemeMode.system by default.
-      // The icon shown depends on the system theme, so we check for either icon.
-      // We verify that a theme toggle icon exists.
+      // Verify theme toggle icon exists
       final hasDarkIcon = find.byIcon(Icons.dark_mode).evaluate().isNotEmpty;
       final hasLightIcon = find.byIcon(Icons.light_mode).evaluate().isNotEmpty;
       expect(hasDarkIcon || hasLightIcon, isTrue);
 
-      // Get the current icon (either dark or light mode icon)
+      // Get the current icon
       final currentIconFinder = hasDarkIcon
           ? find.byIcon(Icons.dark_mode)
           : find.byIcon(Icons.light_mode);
@@ -48,8 +63,7 @@ void main() {
       await tester.tap(currentIconFinder);
       await tester.pumpAndSettle();
 
-      // After toggling, verify the icon changed or a different icon is shown.
-      // The theme cycles: system -> light -> dark -> system
+      // After toggling, verify icon changed
       final hasDarkIconAfter = find
           .byIcon(Icons.dark_mode)
           .evaluate()
@@ -64,7 +78,7 @@ void main() {
     testWidgets('App uses custom green theme in light mode', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const BoosApp());
+      await tester.pumpWidget(BoosApp(key: BoosApp.appKey));
 
       // Get the MaterialApp widget.
       final MaterialApp app = tester.widget(find.byType(MaterialApp));
@@ -81,14 +95,17 @@ void main() {
     testWidgets('App content remains visible after theme toggle', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const BoosApp());
+      await tester.pumpWidget(BoosApp(key: BoosApp.appKey));
+
+      // Wait for splash screen to navigate
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
 
       // Verify content is visible initially.
       expect(find.text('Hello, World!'), findsOneWidget);
       expect(find.text('Boos'), findsOneWidget);
 
       // Toggle theme.
-      // LEARN: Find either icon since app starts with system theme.
       final themeIconFinder = find.byIcon(Icons.dark_mode).evaluate().isNotEmpty
           ? find.byIcon(Icons.dark_mode)
           : find.byIcon(Icons.light_mode);

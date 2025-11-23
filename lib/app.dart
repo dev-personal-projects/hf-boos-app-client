@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'core/storage/local_storage.dart';
+import 'core/constants/route_constants.dart';
+import 'features/auth/presentation/screens/splash_screen.dart';
+import 'features/auth/presentation/screens/onboarding_screen.dart';
+import 'features/auth/presentation/screens/login_screen.dart';
 
 /// Boos App
 ///
@@ -22,6 +26,22 @@ class BoosApp extends StatefulWidget {
 
   @override
   State<BoosApp> createState() => _BoosAppState();
+
+  // LEARN: GlobalKey allows us to access the state from anywhere.
+  // We use this to get the theme toggle function from the splash screen.
+  static final GlobalKey<State<BoosApp>> appKey = GlobalKey<State<BoosApp>>();
+
+  /// Get theme toggle function
+  ///
+  /// LEARN: This public method allows other widgets to get the theme toggle function.
+  /// It safely accesses the app state through the GlobalKey.
+  static VoidCallback? getThemeToggle() {
+    final state = appKey.currentState;
+    if (state is _BoosAppState) {
+      return state.toggleTheme;
+    }
+    return null;
+  }
 }
 
 class _BoosAppState extends State<BoosApp> {
@@ -77,7 +97,10 @@ class _BoosAppState extends State<BoosApp> {
   ///
   /// LEARN: This cycles through: system -> light -> dark -> system
   /// This gives users three options: follow system, force light, or force dark.
-  void _toggleTheme() {
+  ///
+  /// LEARN: This is public (no _) so it can be accessed from other widgets
+  /// like the splash screen using the GlobalKey.
+  void toggleTheme() {
     setState(() {
       switch (_themeMode) {
         case ThemeMode.system:
@@ -121,11 +144,36 @@ class _BoosAppState extends State<BoosApp> {
       /// Hide the debug banner in the top-right corner
       debugShowCheckedModeBanner: false,
 
-      /// Home screen
+      /// Initial route - Splash Screen
       ///
-      /// LEARN: This is the first screen shown when the app opens.
-      /// We pass the theme toggle function so the home screen can change themes.
-      home: MyHomePage(onThemeToggle: _toggleTheme),
+      /// LEARN: The splash screen is the first screen shown when the app opens.
+      /// It handles initialization, checks authentication, and navigates to the
+      /// appropriate screen (onboarding, login, or home).
+      home: const SplashScreen(),
+
+      /// Route generator
+      ///
+      /// LEARN: onGenerateRoute is called when navigating to a named route.
+      /// It allows us to create routes dynamically based on the route name.
+      /// This is useful when we have many routes or need conditional routing.
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case RouteConstants.onboarding:
+            return MaterialPageRoute(
+              builder: (_) => const OnboardingScreen(),
+              settings: settings,
+            );
+          case RouteConstants.login:
+            return MaterialPageRoute(
+              builder: (_) => const LoginScreen(),
+              settings: settings,
+            );
+          default:
+            // LEARN: If route is not found, return null.
+            // Flutter will then call onUnknownRoute if provided.
+            return null;
+        }
+      },
     );
   }
 }
