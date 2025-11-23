@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:boos/main.dart';
+import 'package:boos/app.dart';
 
 void main() {
   group('Boos App Tests', () {
@@ -9,7 +9,7 @@ void main() {
       WidgetTester tester,
     ) async {
       // Build our app and trigger a frame.
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(const BoosApp());
 
       // Verify that the app title is displayed in the AppBar.
       expect(find.text('Boos'), findsOneWidget);
@@ -25,7 +25,7 @@ void main() {
       WidgetTester tester,
     ) async {
       // Build our app.
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(const BoosApp());
 
       // Initially, we should see the dark mode icon (since we start in light mode).
       expect(find.byIcon(Icons.dark_mode), findsOneWidget);
@@ -50,7 +50,7 @@ void main() {
     testWidgets('App uses custom green theme in light mode', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(const BoosApp());
 
       // Get the MaterialApp widget.
       final MaterialApp app = tester.widget(find.byType(MaterialApp));
@@ -67,7 +67,7 @@ void main() {
     testWidgets('App content remains visible after theme toggle', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(const BoosApp());
 
       // Verify content is visible initially.
       expect(find.text('Hello, World!'), findsOneWidget);
